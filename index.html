@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>LCD 5x8 Custom Character Generator</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 20px;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 40px);
+    grid-template-rows: repeat(8, 40px);
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .cell {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #999;
+    cursor: pointer;
+  }
+
+  .cell.active {
+    background: #000;
+  }
+
+  pre {
+    background: #222;
+    color: #0f0;
+    padding: 15px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Generator znaków LCD 5×8</h1>
+<p>Klikaj piksele, aby stworzyć własny znak do LCD.</p>
+
+<div class="grid" id="grid"></div>
+
+<button onclick="clearGrid()">Wyczyść</button>
+
+<h3>Kod do Arduino:</h3>
+<pre id="output"></pre>
+
+<script>
+  const grid = document.getElementById("grid");
+  const output = document.getElementById("output");
+  const cells = [];
+
+  for (let i = 0; i < 40; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.addEventListener("click", () => {
+      cell.classList.toggle("active");
+      generateCode();
+    });
+    grid.appendChild(cell);
+    cells.push(cell);
+  }
+
+  function generateCode() {
+    let result = "byte customChar[8] = {\n";
+
+    for (let row = 0; row < 8; row++) {
+      let value = 0;
+      for (let col = 0; col < 5; col++) {
+        const index = row * 5 + col;
+        if (cells[index].classList.contains("active")) {
+          value |= (1 << (4 - col));
+        }
+      }
+      result += "  0b" + value.toString(2).padStart(5, "0");
+      result += row < 7 ? ",\n" : "\n";
+    }
+
+    result += "};";
+    output.textContent = result;
+  }
+
+  function clearGrid() {
+    cells.forEach(c => c.classList.remove("active"));
+    generateCode();
+  }
+
+  generateCode();
+</script>
+
+</body>
+</html>
